@@ -48,12 +48,21 @@
                     {{-- Right: Actions --}}
                     <div class="flex items-center space-x-4">
                         <div class="hidden md:flex md:items-center md:space-x-6">
-                            <a href="#" class="text-xs font-bold uppercase text-brand-dark hover:text-brand-secondary transition">COLLABORATE</a>
-                            <a href="/login" class="text-xs font-medium text-brand-dark hover:text-brand-secondary transition">LOGIN</a>
-                            <a href="/register" aria-label="Sign Up" class="inline-flex items-center px-5 py-2 border-2 border-brand-dark text-brand-dark bg-brand-beige text-xs font-bold rounded-full hover:bg-brand-dark hover:text-white transition">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 21v-2a4 4 0 00-8 0v2M12 11a4 4 0 100-8 4 4 0 000 8zm8 7v-2a4 4 0 00-3-3.87M4 17v-2a4 4 0 013-3.87" /></svg>
-                                Sign Up
-                            </a>
+                            @auth
+                                <form method="POST" action="{{ route('logout') }}" class="inline">
+                                    @csrf
+                                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-brand-dark text-white text-sm font-medium rounded-full hover:bg-brand-dark/90 transition">
+                                        Logout
+                                    </button>
+                                </form>
+                            @else
+                                <a href="#" class="text-xs font-bold uppercase text-brand-dark hover:text-brand-secondary transition">COLLABORATE</a>
+                                <a href="/login" class="text-xs font-medium text-brand-dark hover:text-brand-secondary transition">LOGIN</a>
+                                <a href="/register" aria-label="Sign Up" class="inline-flex items-center px-5 py-2 border-2 border-brand-dark text-brand-dark bg-brand-beige text-xs font-bold rounded-full hover:bg-brand-dark hover:text-white transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 21v-2a4 4 0 00-8 0v2M12 11a4 4 0 100-8 4 4 0 000 8zm8 7v-2a4 4 0 00-3-3.87M4 17v-2a4 4 0 013-3.87" /></svg>
+                                    Sign Up
+                                </a>
+                            @endauth
                         </div>
 
                         {{-- Mobile menu button --}}
@@ -76,12 +85,19 @@
                     <a href="/closet" class="block px-3 py-2 rounded text-sm font-medium text-brand-dark hover:bg-gray-200">Closet</a>
                     <a href="/profile" class="block px-3 py-2 rounded text-sm font-medium text-brand-dark hover:bg-gray-200">Profile</a>
                     <div class="border-t border-gray-300 mt-2 pt-2">
-                        <a href="#" class="block px-3 py-2 text-xs font-bold uppercase text-brand-dark hover:bg-gray-200">COLLABORATE</a>
-                        <a href="/login" class="block px-3 py-2 text-xs font-medium text-brand-dark hover:bg-gray-200">LOGIN</a>
-                        <a href="/register" aria-label="Sign Up" class="block px-3 py-2 text-xs font-bold border-2 border-brand-dark text-brand-dark bg-brand-beige rounded text-center mt-2 hover:bg-brand-dark hover:text-white transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="inline h-4 w-4 mr-1 align-text-bottom" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 21v-2a4 4 0 00-8 0v2M12 11a4 4 0 100-8 4 4 0 000 8zm8 7v-2a4 4 0 00-3-3.87M4 17v-2a4 4 0 013-3.87" /></svg>
-                            Sign Up
-                        </a>
+                        @auth
+                            <form method="POST" action="{{ route('logout') }}" class="px-3 py-2">
+                                @csrf
+                                <button type="submit" class="w-full text-left bg-brand-dark text-white px-3 py-2 rounded font-medium">Logout</button>
+                            </form>
+                        @else
+                            <a href="#" class="block px-3 py-2 text-xs font-bold uppercase text-brand-dark hover:bg-gray-200">COLLABORATE</a>
+                            <a href="/login" class="block px-3 py-2 text-xs font-medium text-brand-dark hover:bg-gray-200">LOGIN</a>
+                            <a href="/register" aria-label="Sign Up" class="block px-3 py-2 text-xs font-bold border-2 border-brand-dark text-brand-dark bg-brand-beige rounded text-center mt-2 hover:bg-brand-dark hover:text-white transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="inline h-4 w-4 mr-1 align-text-bottom" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 21v-2a4 4 0 00-8 0v2M12 11a4 4 0 100-8 4 4 0 000 8zm8 7v-2a4 4 0 00-3-3.87M4 17v-2a4 4 0 013-3.87" /></svg>
+                                Sign Up
+                            </a>
+                        @endauth
                     </div>
                 </div>
             </div>
