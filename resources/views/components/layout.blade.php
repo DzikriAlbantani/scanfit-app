@@ -25,7 +25,7 @@
 <body class="font-sans antialiased text-brand-dark bg-brand-haze">
 
     {{-- NAVBAR --}}
-    <header x-data="{ open: false }" class="sticky top-0 z-40 bg-brand-bg border-b border-gray-300">
+    <header x-data="{ open: false }" class="sticky top-0 z-40 bg-brand-bg border-b border-gray-300 py-4">
         <nav>
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-16">

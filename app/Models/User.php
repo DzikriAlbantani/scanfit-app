@@ -53,6 +53,16 @@ class User extends Authenticatable
         return $this->hasOne(UserProfile::class);
     }
 
+    public function scans(): HasMany
+    {
+        return $this->hasMany(Scan::class);
+    }
+
+    public function likes(): HasMany
+    {
+        return $this->hasMany(Like::class);
+    }
+
     public function brands(): HasMany
     {
         return $this->hasMany(Brand::class, 'owner_id');

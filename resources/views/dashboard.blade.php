@@ -9,7 +9,7 @@
                         Hi, {{ Auth::user()->name }}!
                     </h1>
                     <p class="text-lg text-gray-600 leading-relaxed">
-                        Berdasarkan gayamu (Streetwear & Casual), ini outfit yang mungkin kamu suka.
+                        Berdasarkan gayamu ({{ Auth::user()->profile->style_preference ?? 'Umum' }}), ini outfit yang mungkin kamu suka.
                     </p>
                 </div>
 

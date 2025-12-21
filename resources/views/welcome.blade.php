@@ -1,6 +1,6 @@
 <x-layout title="ScanFit - Scan your look, Find your fit">
     {{-- HERO SECTION --}}
-    <section class="pt-20 pb-12 bg-gradient-to-b from-[#C8D9E6]/50 via-white to-white">
+    <section class="py-20 lg:py-32 bg-gradient-to-b from-[#C8D9E6]/50 via-white to-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                 <div class="space-y-6">
@@ -25,7 +25,7 @@
     </section>
 
     {{-- AI OUTFIT SCANNER SECTION --}}
-    <section class="py-20 bg-white">
+    <section class="py-20 bg-white my-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col md:flex-row items-center gap-12">
                 <div class="md:w-1/2 flex justify-center">
@@ -45,7 +45,7 @@
     </section>
 
     {{-- FITUR KAMI --}}
-    <section class="py-20 bg-brand-bg">
+    <section class="py-20 bg-brand-bg my-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 class="text-center text-4xl font-bold text-brand-dark mb-16">
                 Temukan Gaya Terbaikmu dengan Fitur Kami
