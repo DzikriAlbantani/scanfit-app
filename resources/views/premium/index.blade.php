@@ -3,7 +3,7 @@
 
     <div class="min-h-screen bg-slate-50" x-data="{ cycle: 'monthly' }">
         <!-- Hero Section -->
-        <section class="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-900/95 to-slate-800 pt-48 pb-32 border-b border-slate-700">
+            <section class="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-900/95 to-slate-800 pt-32 sm:pt-40 md:pt-48 pb-24 sm:pb-32 border-b border-slate-700 mt-20">
             <!-- Gradient blur elements -->
             <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-500/20 rounded-full blur-3xl opacity-40 -mr-40 -mt-40 pointer-events-none"></div>
             <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-500/20 rounded-full blur-3xl opacity-40 -ml-40 mb-0 pointer-events-none"></div>
@@ -46,7 +46,8 @@
         </section>
 
         <!-- Pricing Cards Section -->
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 pb-24 relative z-20">
+        <div class="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 -mt-12 sm:-mt-16 pb-20 sm:pb-24 relative z-20">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             @php
                 $plans = config('pricing.plans');
                 $plusMonthly = (int)($plans['plus']['monthly_price'] ?? 49000);
@@ -57,9 +58,7 @@
                 $proYearly = $proMonthly * max(0, 12 - $proDiscountMonths);
             @endphp
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Basic -->
-                <div class="group relative bg-white rounded-2xl p-8 shadow-lg border border-slate-200 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex flex-col">
+             <!-- Basic -->
                     <div class="absolute inset-0 bg-gradient-to-br from-slate-50 to-transparent opacity-0 group-hover:opacity-100 rounded-2xl transition-opacity pointer-events-none"></div>
                     
                     <div class="relative mb-6">
@@ -96,7 +95,7 @@
 
                 <!-- Plus - Most Popular -->
                 @php $currentPlan = strtolower($user?->subscription_plan ?? 'basic'); @endphp
-                <div class="group relative bg-white rounded-2xl p-8 shadow-xl border-2 {{ $currentPlan==='plus' ? 'border-indigo-500 ring-4 ring-indigo-100' : 'border-indigo-200' }} hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex flex-col transform md:scale-105 md:z-10">
+                <div class="group relative bg-white rounded-2xl p-6 sm:p-8 shadow-xl border-2 {{ $currentPlan==='plus' ? 'border-indigo-500 ring-4 ring-indigo-100' : 'border-indigo-200' }} hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex flex-col md:transform md:scale-105 md:z-10">
                     <div class="absolute -top-4 right-6">
                         <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xs font-bold shadow-lg">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
@@ -163,7 +162,7 @@
                 </div>
 
                 <!-- Pro -->
-                <div class="group relative bg-white rounded-2xl p-8 shadow-lg border border-slate-200 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex flex-col">
+                <div class="group relative bg-white rounded-2xl p-6 sm:p-8 shadow-lg border border-slate-200 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex flex-col">
                     <div class="absolute -top-4 right-6">
                         <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-600 text-white text-xs font-bold shadow-lg">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
@@ -228,7 +227,6 @@
                         </a>
                     @endif
                 </div>
-            </div>
 
             <!-- CTA Section -->
             <div class="mt-20 text-center">
@@ -243,11 +241,11 @@
                         <p class="text-xl font-bold text-slate-900">{{ ucfirst($user?->subscription_plan ?? 'basic') }}</p>
                     </div>
                 @endif
-            </div>
+                </div>
         </div>
 
         <!-- Features Section -->
-        <section class="bg-white border-t border-slate-200 mt-20">
+        <section class="bg-white border-t border-slate-200">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
                 <div class="text-center mb-12">
                     <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">Fitur Unggulan Premium</h2>
