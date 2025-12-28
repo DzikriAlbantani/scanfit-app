@@ -3,7 +3,7 @@
 
     <div class="min-h-screen bg-slate-50" x-data="{ cycle: 'monthly' }">
         <!-- Hero Section -->
-            <section class="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-900/95 to-slate-800 pt-32 sm:pt-40 md:pt-48 pb-24 sm:pb-32 border-b border-slate-700 mt-20">
+            <section class="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-900/95 to-slate-800 pt-48 pb-32 border-b border-slate-700">
             <!-- Gradient blur elements -->
             <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-500/20 rounded-full blur-3xl opacity-40 -mr-40 -mt-40 pointer-events-none"></div>
             <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-500/20 rounded-full blur-3xl opacity-40 -ml-40 mb-0 pointer-events-none"></div>
@@ -46,7 +46,7 @@
         </section>
 
         <!-- Pricing Cards Section -->
-        <div class="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 -mt-12 sm:-mt-16 pb-20 sm:pb-24 relative z-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 pb-24 relative z-20">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             @php
                 $plans = config('pricing.plans');
