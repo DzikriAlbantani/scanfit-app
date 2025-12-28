@@ -126,10 +126,13 @@
         </section>
 
         {{-- BANNER CAROUSEL SECTION --}}
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p class="text-xs text-slate-500">Banner tersedia: {{ $banners?->count() ?? 0 }}</p>
+        </div>
         @if($banners && $banners->count() > 0)
         <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div class="relative">
-                <div class="overflow-hidden rounded-3xl shadow-xl group" x-data="{ current: 0, autoPlay: true }">
+                <div class="overflow-hidden rounded-3xl shadow-xl group" x-data="carousel">
                     {{-- Banner Carousel --}}
                     <div class="relative w-full aspect-[16/6] md:aspect-[21/9] bg-slate-200">
                         @foreach($banners as $index => $banner)
@@ -221,6 +224,32 @@
                     </div>
                     @endif
                 </div>
+            </div>
+        </section>
+        {{-- Fallback static banners grid (non-JS) --}}
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                @foreach($banners as $banner)
+                    <div class="relative rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
+                        @if($banner->banner_image_url)
+                            <img src="{{ asset('storage/' . $banner->banner_image_url) }}" alt="{{ $banner->title }}" class="w-full h-48 object-cover">
+                        @else
+                            <div class="w-full h-48 bg-gradient-to-r from-blue-500 to-purple-500"></div>
+                        @endif
+                        <div class="p-4">
+                            <h3 class="text-base font-bold text-slate-900">{{ $banner->title }}</h3>
+                            @if($banner->description)
+                                <p class="text-sm text-slate-600 mt-1">{{ Str::limit($banner->description, 100) }}</p>
+                            @endif
+                            @if($banner->link_url)
+                                <a href="{{ $banner->link_url }}" onclick="fetch('{{ route('banner.click', $banner) }}')" class="inline-flex items-center mt-3 px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800">
+                                    {{ $banner->cta_text ?? 'Lihat Selengkapnya' }}
+                                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
             </div>
         </section>
         @endif
