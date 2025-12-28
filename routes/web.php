@@ -191,4 +191,6 @@ Route::get('/brand/{brand}', [BrandController::class, 'show'])->name('brand.show
 require __DIR__.'/auth.php';
 
 // Midtrans webhook (public, CSRF-exempt)
-Route::post('/payments/midtrans/notify', [PaymentController::class, 'webhook'])->name('payments.webhook');
+Route::post('/payments/midtrans/notify', [PaymentController::class, 'webhook'])
+    ->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class)
+    ->name('payments.webhook');
