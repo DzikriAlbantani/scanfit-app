@@ -14,12 +14,31 @@ class BulkProductImportController extends Controller
      */
     public function csvTemplate()
     {
-        $headers = ['name', 'category', 'price', 'stock', 'description', 'original_price', 'style', 'fit_type', 'gender_target', 'dominant_color', 'sizes', 'colors', 'image_url'];
-        
+        $headers = [
+            'name', 'category', 'price', 'stock', 'description', 'original_price',
+            'style', 'fit_type', 'gender_target', 'dominant_color', 'sizes', 'colors',
+            'image_url', 'link_shopee', 'link_tokopedia', 'link_tiktok', 'link_lazada'
+        ];
+
         $samples = [
-            ['Oversized Cotton T-Shirt', 'tops', '99000', '50', 'Premium cotton t-shirt perfect for casual wear', '129000', 'casual', 'loose', 'unisex', 'Black', 'S,M,L,XL', 'Black,White,Navy', 'https://example.com/image1.jpg'],
-            ['Slim Fit Jeans', 'bottoms', '249000', '30', 'Comfortable slim fit jeans in dark blue', '329000', 'casual', 'slim', 'male', 'Dark Blue', 'S,M,L,XL', 'Dark Blue', 'https://example.com/image2.jpg'],
-            ['Floral Dress', 'dresses', '199000', '25', 'Beautiful floral print dress ideal for summer', '259000', 'casual', 'regular', 'female', 'Multi Color', 'S,M,L', 'Pink,Blue,Yellow', 'https://example.com/image3.jpg'],
+            [
+                'Oversized Cotton T-Shirt', 'tops', '99000', '50', 'Premium cotton t-shirt perfect for casual wear', '129000',
+                'casual', 'loose', 'unisex', 'Black', 'S,M,L,XL', 'Black,White,Navy',
+                'https://example.com/image1.jpg',
+                'https://shopee.example/item1', 'https://tokopedia.example/item1', 'https://tiktok.example/item1', 'https://lazada.example/item1'
+            ],
+            [
+                'Slim Fit Jeans', 'bottoms', '249000', '30', 'Comfortable slim fit jeans in dark blue', '329000',
+                'casual', 'slim', 'male', 'Dark Blue', 'S,M,L,XL', 'Dark Blue',
+                'https://example.com/image2.jpg',
+                'https://shopee.example/item2', 'https://tokopedia.example/item2', 'https://tiktok.example/item2', 'https://lazada.example/item2'
+            ],
+            [
+                'Floral Dress', 'dresses', '199000', '25', 'Beautiful floral print dress ideal for summer', '259000',
+                'casual', 'regular', 'female', 'Multi Color', 'S,M,L', 'Pink,Blue,Yellow',
+                'https://example.com/image3.jpg',
+                'https://shopee.example/item3', 'https://tokopedia.example/item3', 'https://tiktok.example/item3', 'https://lazada.example/item3'
+            ],
         ];
 
         $filename = 'scanfit-produk-template-' . date('Y-m-d') . '.csv';
@@ -165,6 +184,20 @@ class BulkProductImportController extends Controller
                     }
                     if (!empty($row['image_url'])) {
                         $data['image_url'] = $row['image_url'];
+                    }
+
+                    // Marketplace links
+                    if (!empty($row['link_shopee'])) {
+                        $data['link_shopee'] = $row['link_shopee'];
+                    }
+                    if (!empty($row['link_tokopedia'])) {
+                        $data['link_tokopedia'] = $row['link_tokopedia'];
+                    }
+                    if (!empty($row['link_tiktok'])) {
+                        $data['link_tiktok'] = $row['link_tiktok'];
+                    }
+                    if (!empty($row['link_lazada'])) {
+                        $data['link_lazada'] = $row['link_lazada'];
                     }
 
                     // Derive store_name from brand (optional fallback)
