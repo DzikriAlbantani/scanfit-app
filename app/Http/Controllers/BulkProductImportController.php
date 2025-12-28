@@ -108,11 +108,28 @@ class BulkProductImportController extends Controller
                         continue;
                     }
 
+                    // Map category to enum values used in DB
+                    $rawCategory = strtolower($row['category']);
+                    $categoryMap = [
+                        'tops' => 'Atasan',
+                        'atasan' => 'Atasan',
+                        'bottoms' => 'Bawahan',
+                        'bawahan' => 'Bawahan',
+                        'outerwear' => 'Outwear', // enum uses 'Outwear'
+                        'outwear' => 'Outwear',
+                        'dresses' => 'Dress',
+                        'dress' => 'Dress',
+                        'shoes' => 'Shoes',
+                        'aksesoris' => 'Aksesoris',
+                        'accessories' => 'Aksesoris',
+                    ];
+                    $mappedCategory = $categoryMap[$rawCategory] ?? 'Atasan';
+
                     // Prepare data
                     $data = [
                         'brand_id' => $brandId,
                         'name' => $row['name'],
-                        'category' => $row['category'],
+                        'category' => $mappedCategory,
                         'price' => (int) $row['price'],
                         'stock' => isset($row['stock']) ? (int) $row['stock'] : 0,
                         'status' => 'active',
@@ -164,7 +181,7 @@ class BulkProductImportController extends Controller
             }
 
             // Prepare response message
-            $message = "✓ Berhasil import {$successCount} produk";
+                    $message = "✓ Berhasil import {$successCount} produk";
             
             if (!empty($duplicates)) {
                 $message .= " | ⚠ Diabaikan " . count($duplicates) . " duplikat";
