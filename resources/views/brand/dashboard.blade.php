@@ -15,76 +15,76 @@
 
     <div class="space-y-8">
         {{-- Welcome Section --}}
-        <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-3xl p-8 text-white">
-            <h1 class="text-3xl font-bold mb-2">Welcome back, {{ Auth::user()->name }}!</h1>
-            <p class="text-blue-100">Here's what's happening with your brand on ScanFit today.</p>
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 text-white">
+            <h1 class="text-2xl sm:text-3xl font-bold mb-2">Welcome back, {{ Auth::user()->name }}!</h1>
+            <p class="text-sm sm:text-base text-blue-100">Here's what's happening with your brand on ScanFit today.</p>
         </div>
 
                 {{-- Stats Cards --}}
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                     {{-- Total Scan Matches --}}
-                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 relative overflow-hidden">
-                        <div class="absolute top-4 right-4 w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 relative overflow-hidden">
+                        <div class="absolute top-3 sm:top-4 right-3 sm:right-4 w-10 sm:w-12 h-10 sm:h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 sm:w-6 h-5 sm:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                             </svg>
                         </div>
-                        <div class="pr-16">
-                            <p class="text-sm font-medium text-slate-600 mb-1">Total Scan Matches</p>
-                            <p class="text-3xl font-bold text-slate-900">{{ number_format($stats['total_scan_matches']) }}</p>
+                        <div class="pr-12 sm:pr-16">
+                            <p class="text-xs sm:text-sm font-medium text-slate-600 mb-1">Total Scan Matches</p>
+                            <p class="text-2xl sm:text-3xl font-bold text-slate-900">{{ number_format($stats['total_scan_matches']) }}</p>
                             <p class="text-xs text-slate-500 font-medium mt-1">Produk muncul di hasil scan</p>
                         </div>
                     </div>
 
                     {{-- Product Views --}}
-                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 relative overflow-hidden">
-                        <div class="absolute top-4 right-4 w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 relative overflow-hidden">
+                        <div class="absolute top-3 sm:top-4 right-3 sm:right-4 w-10 sm:w-12 h-10 sm:h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 sm:w-6 h-5 sm:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                             </svg>
                         </div>
-                        <div class="pr-16">
-                            <p class="text-sm font-medium text-slate-600 mb-1">Product Views</p>
-                            <p class="text-3xl font-bold text-slate-900">{{ number_format($stats['total_clicks']) }}</p>
+                        <div class="pr-12 sm:pr-16">
+                            <p class="text-xs sm:text-sm font-medium text-slate-600 mb-1">Product Views</p>
+                            <p class="text-2xl sm:text-3xl font-bold text-slate-900">{{ number_format($stats['total_clicks']) }}</p>
                             <p class="text-xs text-slate-500 font-medium mt-1">Total klik produk</p>
                         </div>
                     </div>
 
                     {{-- Wishlisted --}}
-                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 relative overflow-hidden">
-                        <div class="absolute top-4 right-4 w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
-                            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 relative overflow-hidden">
+                        <div class="absolute top-3 sm:top-4 right-3 sm:right-4 w-10 sm:w-12 h-10 sm:h-12 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 sm:w-6 h-5 sm:h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
                             </svg>
                         </div>
-                        <div class="pr-16">
-                            <p class="text-sm font-medium text-slate-600 mb-1">Wishlisted</p>
-                            <p class="text-3xl font-bold text-slate-900">{{ number_format($stats['total_wishlisted']) }}</p>
+                        <div class="pr-12 sm:pr-16">
+                            <p class="text-xs sm:text-sm font-medium text-slate-600 mb-1">Wishlisted</p>
+                            <p class="text-2xl sm:text-3xl font-bold text-slate-900">{{ number_format($stats['total_wishlisted']) }}</p>
                             <p class="text-xs text-slate-500 font-medium mt-1">Disimpan ke closet</p>
                         </div>
                     </div>
 
                     {{-- Conversion Rate --}}
-                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 relative overflow-hidden">
-                        <div class="absolute top-4 right-4 w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 relative overflow-hidden">
+                        <div class="absolute top-3 sm:top-4 right-3 sm:right-4 w-10 sm:w-12 h-10 sm:h-12 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 sm:w-6 h-5 sm:h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
                             </svg>
                         </div>
-                        <div class="pr-16">
-                            <p class="text-sm font-medium text-slate-600 mb-1">Conversion Rate</p>
-                            <p class="text-3xl font-bold text-slate-900">{{ number_format($stats['conversion_rate'], 1) }}%</p>
+                        <div class="pr-12 sm:pr-16">
+                            <p class="text-xs sm:text-sm font-medium text-slate-600 mb-1">Conversion Rate</p>
+                            <p class="text-2xl sm:text-3xl font-bold text-slate-900">{{ number_format($stats['conversion_rate'], 1) }}%</p>
                             <p class="text-xs text-slate-500 font-medium mt-1">Saved / Views ratio</p>
                         </div>
                     </div>
                 </div>
 
                 {{-- Analytics Chart Section --}}
-                <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-2xl font-bold text-slate-900">Performa 30 Hari Terakhir</h2>
-                        <select id="chartType" class="px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm border border-slate-200">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                        <h2 class="text-xl sm:text-2xl font-bold text-slate-900">Performa 30 Hari Terakhir</h2>
+                        <select id="chartType" class="px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-auto">
                             <option value="clicks">Product Views</option>
                             <option value="scans">Scan Matches</option>
                             <option value="saves">Saves to Closet</option>
@@ -92,23 +92,24 @@
                     </div>
 
                     {{-- Real Chart Canvas --}}
-                    <div class="relative" style="height: 300px;">
+                    <div class="relative overflow-x-auto" style="height: 300px;">
                         <canvas id="performanceChart"></canvas>
                     </div>
                 </div>
 
                 {{-- Products Table --}}
-                <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
-                    <div class="flex items-center justify-between mb-6">
+                <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm border border-slate-200">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                         <div>
-                            <h2 class="text-2xl font-bold text-slate-900">Produk</h2>
-                            <p class="text-slate-600 text-sm mt-1">Kelola dan pantau performa produk Anda</p>
+                            <h2 class="text-xl sm:text-2xl font-bold text-slate-900">Produk</h2>
+                            <p class="text-slate-600 text-xs sm:text-sm mt-1">Kelola dan pantau performa produk Anda</p>
                         </div>
-                        <a href="{{ route('brand.products.create') }}" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-sm">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <a href="{{ route('brand.products.create') }}" class="inline-flex items-center justify-center sm:justify-start px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap text-sm sm:text-base">
+                            <svg class="w-4 sm:w-5 h-4 sm:h-5 sm:mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                             </svg>
-                            Tambah Produk
+                            <span class="hidden sm:inline">Tambah Produk</span>
+                            <span class="sm:hidden">Tambah</span>
                         </a>
                     </div>
 
