@@ -153,35 +153,6 @@
         </div>
     </div>
 
-    {{-- Chart Section --}}
-    <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 mb-8 relative overflow-hidden">
-        <div class="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4">
-            <div>
-                <h2 class="text-xl font-bold text-slate-900">Performance Trends</h2>
-                <p class="text-sm text-slate-500">Clicks, saves, dan scan matches 30 hari terakhir</p>
-            </div>
-            <span class="text-xs font-medium text-slate-500">
-                Last update: <span id="lastUpdate">{{ now()->format('H:i:s') }}</span>
-            </span>
-        </div>
-
-        <div class="relative" style="min-height:300px;">
-            <canvas id="performanceChart" style="width:100%;height:280px;"></canvas>
-            <div id="chartEmptyState" class="absolute inset-0 hidden items-center justify-center text-sm text-slate-500">Belum ada data untuk ditampilkan.</div>
-            @if(!$isPro)
-                <div id="chartLockOverlay" class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center text-center text-white">
-                    <div class="space-y-3">
-                        <p class="text-sm font-semibold">Performance trends terkunci</p>
-                        <a href="{{ route('brand.pricing') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-white text-slate-900 rounded-lg font-bold text-sm shadow hover:bg-slate-100">
-                            Upgrade untuk membuka
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
-                        </a>
-                    </div>
-                </div>
-            @endif
-        </div>
-    </div>
-
     {{-- Top Products Table --}}
     <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden relative">
         <div class="p-6 border-b border-slate-100 flex justify-between items-center">
