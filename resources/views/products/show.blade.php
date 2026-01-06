@@ -113,7 +113,7 @@
                         <!-- Action Buttons -->
                         <div class="space-y-4">
                             @if($item->link_shopee || $item->link_tokopedia)
-                                <div class="flex gap-3">
+                                <div class="flex flex-col sm:flex-row gap-3">
                                     @if($item->link_shopee)
                                         <button onclick="trackAndOpen('{{ $item->link_shopee }}', 'shopee')" 
                                                 class="flex-1 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md hover:shadow-lg flex items-center justify-center"

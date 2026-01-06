@@ -15,7 +15,7 @@
                     </p>
                 </div>
 
-                <div class="mt-8 flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div class="mt-8 flex flex-col md:flex-row gap-4 items-center justify-between w-full">
                     <form action="{{ route('admin.brands') }}" method="GET" class="relative w-full md:max-w-md group">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <svg class="h-5 w-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -26,19 +26,21 @@
                                class="block w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-full text-base text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:ring-0 transition-all shadow-sm hover:border-slate-300">
                     </form>
 
-                    <div class="flex gap-2">
-                        <a href="{{ route('admin.brands') }}" class="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm transition-all whitespace-nowrap border shadow-sm {{ !request('status') ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50' }}">
-                            Semua ({{ $stats['pending'] + $stats['approved'] + $stats['rejected'] }})
-                        </a>
-                        <a href="{{ route('admin.brands', ['status' => 'pending']) }}" class="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm transition-all whitespace-nowrap border shadow-sm {{ request('status') === 'pending' ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-orange-600 border-orange-200 hover:bg-orange-50' }}">
-                            ⏳ Pending ({{ $stats['pending'] }})
-                        </a>
-                        <a href="{{ route('admin.brands', ['status' => 'approved']) }}" class="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm transition-all whitespace-nowrap border shadow-sm {{ request('status') === 'approved' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-emerald-600 border-emerald-200 hover:bg-emerald-50' }}">
-                            ✓ Approved ({{ $stats['approved'] }})
-                        </a>
-                        <a href="{{ route('admin.brands', ['status' => 'rejected']) }}" class="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm transition-all whitespace-nowrap border shadow-sm {{ request('status') === 'rejected' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-600 border-red-200 hover:bg-red-50' }}">
-                            ✕ Rejected ({{ $stats['rejected'] }})
-                        </a>
+                    <div class="w-full overflow-x-auto">
+                        <div class="flex gap-2 min-w-max pb-1">
+                            <a href="{{ route('admin.brands') }}" class="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm transition-all whitespace-nowrap border shadow-sm {{ !request('status') ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50' }}">
+                                Semua ({{ $stats['pending'] + $stats['approved'] + $stats['rejected'] }})
+                            </a>
+                            <a href="{{ route('admin.brands', ['status' => 'pending']) }}" class="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm transition-all whitespace-nowrap border shadow-sm {{ request('status') === 'pending' ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-orange-600 border-orange-200 hover:bg-orange-50' }}">
+                                ⏳ Pending ({{ $stats['pending'] }})
+                            </a>
+                            <a href="{{ route('admin.brands', ['status' => 'approved']) }}" class="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm transition-all whitespace-nowrap border shadow-sm {{ request('status') === 'approved' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-emerald-600 border-emerald-200 hover:bg-emerald-50' }}">
+                                ✓ Approved ({{ $stats['approved'] }})
+                            </a>
+                            <a href="{{ route('admin.brands', ['status' => 'rejected']) }}" class="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm transition-all whitespace-nowrap border shadow-sm {{ request('status') === 'rejected' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-600 border-red-200 hover:bg-red-50' }}">
+                                ✕ Rejected ({{ $stats['rejected'] }})
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -40,7 +40,7 @@
     </style>
     
     {{-- HERO SECTION --}}
-    <section class="relative pt-48 pb-20 lg:pb-32 overflow-hidden bg-white">
+    <section class="relative pt-36 sm:pt-44 lg:pt-48 pb-16 sm:pb-20 lg:pb-32 overflow-hidden bg-white">
         <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-blue-100 rounded-full blur-3xl opacity-50 animate-pulse"></div>
         <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 bg-purple-100 rounded-full blur-3xl opacity-50 animate-pulse" style="animation-delay: 2s"></div>
 
@@ -51,7 +51,7 @@
                     <div class="inline-block bg-blue-50 text-brand-dark px-4 py-1.5 rounded-full text-sm font-bold tracking-wide mb-2 border border-blue-100 fade-in-up">
                         ✨ #1 AI Fashion Assistant di Indonesia
                     </div>
-                    <h1 class="text-5xl sm:text-6xl font-extrabold text-slate-900 leading-tight fade-in-up delay-100">
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-tight fade-in-up delay-100">
                         Bingung Mau Pakai Baju Apa? <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Scan Aja!</span>
                     </h1>
                     <p class="text-lg text-gray-600 max-w-xl mx-auto lg:mx-0 leading-relaxed fade-in-up delay-200">
@@ -102,7 +102,7 @@
 
     {{-- BRAND PARTNERS (CARD STYLE MARQUEE) --}}
     <section class="py-16 bg-gray-50 border-y border-gray-200 overflow-hidden">
-        <div class="max-w-full">
+        <div class="max-w-full px-4 sm:px-6 lg:px-8">
             <p class="text-center text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mb-10">Dipercaya oleh Brand Lokal Favoritmu</p>
             
             <div class="marquee-wrapper relative w-full overflow-hidden">

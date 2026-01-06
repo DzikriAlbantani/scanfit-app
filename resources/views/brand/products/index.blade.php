@@ -244,7 +244,7 @@
             {{-- Table View --}}
             <div id="tableView" class="hidden bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="w-full">
+                    <table class="w-full min-w-[900px]">
                         <thead class="bg-slate-50 border-b border-slate-200">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-bold text-slate-900">Produk</th>

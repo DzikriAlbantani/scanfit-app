@@ -114,7 +114,7 @@
 
                     @if($popularProducts->count() > 0)
                         <div class="overflow-x-auto">
-                            <table class="w-full">
+                            <table class="w-full min-w-[800px]">
                                 <thead>
                                     <tr class="border-b-2 border-slate-200 bg-slate-50">
                                         <th class="text-left py-4 px-4 font-bold text-slate-700 text-xs uppercase tracking-wider">Produk</th>

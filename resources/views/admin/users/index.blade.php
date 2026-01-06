@@ -44,7 +44,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
             <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="w-full">
+                    <table class="w-full min-w-[640px]">
                         <thead>
                             <tr class="border-b border-slate-200 bg-slate-50">
                                 <th class="px-6 py-4 text-left text-sm font-bold text-slate-900">Nama</th>

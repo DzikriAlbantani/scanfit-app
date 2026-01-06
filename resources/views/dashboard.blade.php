@@ -137,7 +137,7 @@
                     <h2 class="text-2xl font-bold text-slate-900 mt-1">Kabar & Promo Terbaru</h2>
                 </div>
                 @if($banners->count() > 1)
-                <div class="flex gap-2">
+                <div class="hidden md:flex gap-2">
                     <button @click="prev()" class="w-10 h-10 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 shadow-sm transition">
                         <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                     </button>
@@ -151,7 +151,7 @@
             <div class="relative">
                 <div class="overflow-hidden rounded-3xl shadow-xl group">
                     {{-- Banner Carousel --}}
-                    <div class="relative w-full aspect-[16/6] md:aspect-[21/9] bg-slate-200">
+                    <div class="relative w-full aspect-[4/5] sm:aspect-[16/9] md:aspect-[21/9] bg-slate-200">
                         @foreach($banners as $index => $banner)
                         <div class="absolute inset-0 transition-opacity duration-1000" 
                              :class="current === {{ $index }} ? 'opacity-100' : 'opacity-0'">
@@ -324,7 +324,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                 @foreach($exploreProducts as $product)
                     @php $normalizedCategory = Str::slug($product->category ?? ''); @endphp
                     <div x-show="activeCategory === 'all' || activeCategory === '{{ $normalizedCategory }}'" 

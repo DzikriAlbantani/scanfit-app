@@ -58,19 +58,21 @@
                         </button>
                     </div>
 
-                    <div class="flex gap-2 flex-wrap">
-                        <a href="{{ route('admin.banners.index') }}" class="px-4 py-2 rounded-full font-bold text-sm transition {{ !request('status') ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100' }}">
-                            Semua
-                        </a>
-                        <a href="{{ route('admin.banners.index', ['status' => 'pending']) }}" class="px-4 py-2 rounded-full font-bold text-sm transition {{ request('status') === 'pending' ? 'bg-orange-600 text-white' : 'bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100' }}">
-                            Pending Review
-                        </a>
-                        <a href="{{ route('admin.banners.index', ['status' => 'approved']) }}" class="px-4 py-2 rounded-full font-bold text-sm transition {{ request('status') === 'approved' ? 'bg-blue-600 text-white' : 'bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100' }}">
-                            Approved
-                        </a>
-                        <a href="{{ route('admin.banners.index', ['status' => 'active']) }}" class="px-4 py-2 rounded-full font-bold text-sm transition {{ request('status') === 'active' ? 'bg-emerald-600 text-white' : 'bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100' }}">
-                            Active
-                        </a>
+                    <div class="w-full overflow-x-auto">
+                        <div class="flex gap-2 flex-wrap md:flex-nowrap min-w-max pb-1">
+                            <a href="{{ route('admin.banners.index') }}" class="px-4 py-2 rounded-full font-bold text-sm transition whitespace-nowrap {{ !request('status') ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100' }}">
+                                Semua
+                            </a>
+                            <a href="{{ route('admin.banners.index', ['status' => 'pending']) }}" class="px-4 py-2 rounded-full font-bold text-sm transition whitespace-nowrap {{ request('status') === 'pending' ? 'bg-orange-600 text-white' : 'bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100' }}">
+                                Pending Review
+                            </a>
+                            <a href="{{ route('admin.banners.index', ['status' => 'approved']) }}" class="px-4 py-2 rounded-full font-bold text-sm transition whitespace-nowrap {{ request('status') === 'approved' ? 'bg-blue-600 text-white' : 'bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100' }}">
+                                Approved
+                            </a>
+                            <a href="{{ route('admin.banners.index', ['status' => 'active']) }}" class="px-4 py-2 rounded-full font-bold text-sm transition whitespace-nowrap {{ request('status') === 'active' ? 'bg-emerald-600 text-white' : 'bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100' }}">
+                                Active
+                            </a>
+                        </div>
                     </div>
                 </form>
             </div>
