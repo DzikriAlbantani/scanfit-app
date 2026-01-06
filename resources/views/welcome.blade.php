@@ -220,11 +220,11 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
                 <div class="hover:-translate-y-2 transition-transform duration-300">
-                    <div class="text-4xl lg:text-5xl font-extrabold text-blue-400 mb-2">100+</div>
+                    <div class="text-4xl lg:text-5xl font-extrabold text-blue-400 mb-2">10+</div>
                     <p class="text-slate-400 font-medium">Brand Lokal</p>
                 </div>
                 <div class="hover:-translate-y-2 transition-transform duration-300">
-                    <div class="text-4xl lg:text-5xl font-extrabold text-blue-400 mb-2">5k+</div>
+                    <div class="text-4xl lg:text-5xl font-extrabold text-blue-400 mb-2">1k+</div>
                     <p class="text-slate-400 font-medium">Outfit Dianalisis</p>
                 </div>
                 <div class="hover:-translate-y-2 transition-transform duration-300">
