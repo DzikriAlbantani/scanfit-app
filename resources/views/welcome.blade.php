@@ -83,11 +83,11 @@
 
                         <div class="absolute bottom-32 -right-12 z-20 bg-white/95 backdrop-blur-sm p-4 rounded-xl shadow-xl border border-gray-100 flex items-center gap-3 animate-float-delayed w-52">
                             <div class="w-10 h-10 rounded-full overflow-hidden border border-gray-200 bg-gray-100 flex-shrink-0">
-                                <img src="https://ui-avatars.com/api/?name=Erigo&background=2563EB&color=fff" class="w-full h-full object-cover">
+                                <img src="https://ui-avatars.com/api/?name=LB&background=2563EB&color=fff" class="w-full h-full object-cover">
                             </div>
                             <div>
                                 <p class="text-[10px] uppercase text-gray-500 font-bold tracking-wider">Brand Found</p>
-                                <p class="text-sm font-bold text-slate-900">Erigo Apparel</p>
+                                <p class="text-sm font-bold text-slate-900">Local Brand</p>
                             </div>
                         </div>
 
@@ -106,21 +106,34 @@
             <p class="text-center text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mb-10">Dipercaya oleh Brand Lokal Favoritmu</p>
             
             <div class="marquee-wrapper relative w-full overflow-hidden">
-                <div class="animate-marquee flex items-center gap-8 pl-8"> @for ($i = 0; $i < 6; $i++) 
+                <div class="animate-marquee flex items-center gap-8 pl-8">
+                    @forelse($brands as $brand)
+                        @if($brand && $brand->logo_url)
                         <div class="flex-shrink-0 w-48 h-24 bg-white border border-gray-200 rounded-xl shadow-sm flex items-center justify-center p-4 hover:shadow-md hover:border-blue-200 transition-all duration-300 group">
-                            <img src="https://placehold.co/120x40/white/0f172a?text=BRAND+{{$i+1}}" 
+                            <img src="{{ $brand->logo_url }}" 
                                  class="max-w-full max-h-full object-contain opacity-60 grayscale group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300" 
-                                 alt="Brand Logo">
+                                 alt="{{ $brand->name ?? $brand->brand_name ?? 'Brand' }}">
                         </div>
-                    @endfor
+                        @endif
+                    @empty
+                        @for ($i = 0; $i < 6; $i++) 
+                            <div class="flex-shrink-0 w-48 h-24 bg-white border border-gray-200 rounded-xl shadow-sm flex items-center justify-center p-4 hover:shadow-md hover:border-blue-200 transition-all duration-300 group">
+                                <img src="https://placehold.co/120x40/white/0f172a?text=BRAND+{{$i+1}}" 
+                                     class="max-w-full max-h-full object-contain opacity-60 grayscale group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300" 
+                                     alt="Brand Logo">
+                            </div>
+                        @endfor
+                    @endforelse
                     {{-- DUPLIKASI UNTUK LOOPING --}}
-                    @for ($i = 0; $i < 6; $i++) 
+                    @foreach($brands as $brand)
+                        @if($brand && $brand->logo_url)
                         <div class="flex-shrink-0 w-48 h-24 bg-white border border-gray-200 rounded-xl shadow-sm flex items-center justify-center p-4 hover:shadow-md hover:border-blue-200 transition-all duration-300 group">
-                            <img src="https://placehold.co/120x40/white/0f172a?text=BRAND+{{$i+1}}" 
+                            <img src="{{ $brand->logo_url }}" 
                                  class="max-w-full max-h-full object-contain opacity-60 grayscale group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300" 
-                                 alt="Brand Logo">
+                                 alt="{{ $brand->name ?? $brand->brand_name ?? 'Brand' }}">
                         </div>
-                    @endfor
+                        @endif
+                    @endforeach
                 </div>
                 
                 <div class="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-gray-50 to-transparent z-10"></div>

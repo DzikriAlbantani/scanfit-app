@@ -11,7 +11,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'brand.approved' => \App\Http\Middleware\EnsureBrandIsApproved::class,
+            'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        ]);
+        
+        // Exclude closet/save route from CSRF protection
+        $middleware->validateCsrfTokens(except: [
+            'closet/save',
+            'payments/midtrans/notify',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

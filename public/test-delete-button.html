@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Delete Button Test</title>
+    <script>
+        let pendingForm = null;
+        let pendingAction = null;
+        
+        function openConfirmModal(options) {
+            console.log('openConfirmModal called with:', options);
+            pendingAction = options.onConfirm;
+            pendingForm = options.form;
+            alert(`Title: ${options.title}\nMessage: ${options.message}`);
+        }
+        
+        function showDeleteProductConfirm(productName, productId) {
+            console.log('showDeleteProductConfirm called:', productName, productId);
+            openConfirmModal({
+                title: 'Delete Product',
+                message: `Are you sure you want to delete "${productName}"?`,
+                type: 'delete',
+                showWarning: true,
+                onConfirm: () => {
+                    const form = document.getElementById(`deleteProductForm${productId}`);
+                    console.log('Form found:', form);
+                    if (form) {
+                        console.log('Submitting form...');
+                        form.submit();
+                    }
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>Delete Button Test</h1>
+    
+    <form id="deleteProductForm1" method="POST" action="http://example.com/delete" style="display:inline;">
+        <button type="button" onclick="showDeleteProductConfirm('Test Product', 1)" style="padding:10px;background:red;color:white;">
+            Delete
+        </button>
+    </form>
+    
+    <p>Check browser console for debug messages</p>
+</body>
+</html>

@@ -101,7 +101,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($brands as $brandData) {
-            Brand::create($brandData);
+            Brand::create(array_merge($brandData, ['status' => 'approved']));
         }
 
         // ===== CREATE 25 FASHION PRODUCTS =====
@@ -185,6 +185,12 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        $this->command->info('Database seeded successfully with 3 users, 5 brands, and 25 products!');
+        // Seed fashion items
+        $this->call(FashionItemSeeder::class);
+
+        // Seed closet items
+        $this->call(ClosetItemSeeder::class);
+
+        $this->command->info('Database seeded successfully with 3 users, 5 brands, 25 products, 50 fashion items, and 20 closet items!');
     }
 }

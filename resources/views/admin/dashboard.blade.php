@@ -87,6 +87,7 @@
                 <a href="{{ route('admin.dashboard') }}" class="px-6 py-4 border-b-2 font-bold text-slate-900 border-slate-900 whitespace-nowrap">Overview</a>
                 <a href="{{ route('admin.brands') }}" class="px-6 py-4 border-b-2 font-bold text-slate-600 border-transparent hover:text-slate-900 hover:border-slate-300 transition whitespace-nowrap">Brands</a>
                 <a href="{{ route('admin.users') }}" class="px-6 py-4 border-b-2 font-bold text-slate-600 border-transparent hover:text-slate-900 hover:border-slate-300 transition whitespace-nowrap">Pengguna</a>
+                <a href="{{ route('admin.banners.index') }}" class="px-6 py-4 border-b-2 font-bold text-slate-600 border-transparent hover:text-slate-900 hover:border-slate-300 transition whitespace-nowrap">Banners</a>
                 <a href="{{ route('admin.settings') }}" class="px-6 py-4 border-b-2 font-bold text-slate-600 border-transparent hover:text-slate-900 hover:border-slate-300 transition whitespace-nowrap">Pengaturan</a>
             </div>
 

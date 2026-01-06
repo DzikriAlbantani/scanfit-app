@@ -30,6 +30,9 @@
                     <div class="space-y-6 animate-fade-in-up text-center lg:text-left">
                         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold tracking-wide mb-2 border border-blue-200 w-fit mx-auto lg:mx-0">
                             👋 Welcome back
+                            @if(Auth::user()->isPremium())
+                            <span class="ml-2 px-2 py-0.5 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-bold rounded-full">⭐ {{ ucfirst(Auth::user()->subscription_plan) }}</span>
+                            @endif
                         </div>
                         <h1 class="text-4xl lg:text-5xl font-extrabold text-slate-900 leading-tight">
                             Hi, <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">{{ Auth::user()->name }}</span>!
@@ -63,7 +66,7 @@
             </div>
         </section>
 
-        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12" x-data="carousel">
             <div class="flex items-center justify-between mb-8">
                 <div>
                     <h2 class="text-2xl font-bold text-slate-900">Rekomendasi Untukmu</h2>
@@ -125,14 +128,28 @@
             </div>
         </section>
 
-        {{-- BANNER CAROUSEL SECTION --}}
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <p class="text-xs text-slate-500">Banner tersedia: {{ $banners?->count() ?? 0 }}</p>
-        </div>
+        {{-- BANNER SECTION (single placement) --}}
         @if($banners && $banners->count() > 0)
         <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <p class="text-xs font-semibold text-blue-600 uppercase tracking-[0.2em]">Highlights</p>
+                    <h2 class="text-2xl font-bold text-slate-900 mt-1">Kabar & Promo Terbaru</h2>
+                </div>
+                @if($banners->count() > 1)
+                <div class="flex gap-2">
+                    <button @click="prev()" class="w-10 h-10 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 shadow-sm transition">
+                        <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    </button>
+                    <button @click="next()" class="w-10 h-10 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 shadow-sm transition">
+                        <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                </div>
+                @endif
+            </div>
+
             <div class="relative">
-                <div class="overflow-hidden rounded-3xl shadow-xl group" x-data="carousel">
+                <div class="overflow-hidden rounded-3xl shadow-xl group">
                     {{-- Banner Carousel --}}
                     <div class="relative w-full aspect-[16/6] md:aspect-[21/9] bg-slate-200">
                         @foreach($banners as $index => $banner)
@@ -200,7 +217,7 @@
                         </script>
                     </div>
 
-                    {{-- Navigation Buttons --}}
+                    {{-- Navigation Buttons (overlay) --}}
                     @if($banners->count() > 1)
                     <button @click="prev()" class="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white/80 hover:bg-white text-slate-900 rounded-full flex items-center justify-center transition-all shadow-lg">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -224,32 +241,33 @@
                     </div>
                     @endif
                 </div>
-            </div>
-        </section>
-        {{-- Fallback static banners grid (non-JS) --}}
-        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                @foreach($banners as $banner)
-                    <div class="relative rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
-                        @if($banner->banner_image_url)
-                            <img src="{{ asset('storage/' . $banner->banner_image_url) }}" alt="{{ $banner->title }}" class="w-full h-48 object-cover">
-                        @else
-                            <div class="w-full h-48 bg-gradient-to-r from-blue-500 to-purple-500"></div>
-                        @endif
-                        <div class="p-4">
-                            <h3 class="text-base font-bold text-slate-900">{{ $banner->title }}</h3>
-                            @if($banner->description)
-                                <p class="text-sm text-slate-600 mt-1">{{ Str::limit($banner->description, 100) }}</p>
-                            @endif
-                            @if($banner->link_url)
-                                <a href="{{ $banner->link_url }}" onclick="fetch('{{ route('banner.click', $banner) }}')" class="inline-flex items-center mt-3 px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800">
-                                    {{ $banner->cta_text ?? 'Lihat Selengkapnya' }}
-                                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                                </a>
-                            @endif
-                        </div>
+
+                {{-- Static fallback for no-JS --}}
+                <noscript>
+                    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        @foreach($banners as $banner)
+                            <div class="relative rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-white">
+                                @if($banner->banner_image_url)
+                                    <img src="{{ asset('storage/' . $banner->banner_image_url) }}" alt="{{ $banner->title }}" class="w-full h-48 object-cover">
+                                @else
+                                    <div class="w-full h-48 bg-gradient-to-r from-blue-500 to-purple-500"></div>
+                                @endif
+                                <div class="p-4">
+                                    <h3 class="text-base font-bold text-slate-900">{{ $banner->title }}</h3>
+                                    @if($banner->description)
+                                        <p class="text-sm text-slate-600 mt-1">{{ Str::limit($banner->description, 100) }}</p>
+                                    @endif
+                                    @if($banner->link_url)
+                                        <a href="{{ $banner->link_url }}" onclick="fetch('{{ route('banner.click', $banner) }}')" class="inline-flex items-center mt-3 px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800">
+                                            {{ $banner->cta_text ?? 'Lihat Selengkapnya' }}
+                                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
-                @endforeach
+                </noscript>
             </div>
         </section>
         @endif
@@ -280,20 +298,24 @@
             </div>
         </section>
 
-        <section x-data="{ activeCategory: 'Semua' }" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        @php
+            $categoryFilters = [
+                ['label' => 'Semua', 'value' => 'all', 'icon' => 'M4 6h16M4 12h16M4 18h16'],
+                ['label' => 'Atasan', 'value' => 'atasan', 'icon' => 'M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4z'],
+                ['label' => 'Bawahan', 'value' => 'bawahan', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'],
+                ['label' => 'Outerwear', 'value' => 'outerwear', 'icon' => 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z'],
+                ['label' => 'Aksesoris', 'value' => 'aksesoris', 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'],
+            ];
+        @endphp
+
+        <section x-data="{ activeCategory: 'all' }" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <h2 class="text-2xl font-bold text-slate-900">Explore Style</h2>
                 
                 <div class="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
-                    @foreach([
-                        ['label' => 'Semua', 'icon' => 'M4 6h16M4 12h16M4 18h16'], 
-                        ['label' => 'Atasan', 'icon' => 'M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4z'], 
-                        ['label' => 'Bawahan', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'],
-                        ['label' => 'Outerwear', 'icon' => 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z'],
-                        ['label' => 'Aksesoris', 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z']
-                    ] as $cat)
-                        <button @click="activeCategory = '{{ $cat['label'] }}'" 
-                                :class="activeCategory === '{{ $cat['label'] }}' ? 'bg-slate-900 text-white shadow-md' : 'bg-white text-slate-600 border border-gray-200 hover:bg-gray-50'" 
+                    @foreach($categoryFilters as $cat)
+                        <button @click="activeCategory = '{{ $cat['value'] }}'" 
+                                :class="activeCategory === '{{ $cat['value'] }}' ? 'bg-slate-900 text-white shadow-md' : 'bg-white text-slate-600 border border-gray-200 hover:bg-gray-50'" 
                                 class="flex items-center gap-2 px-5 py-2.5 rounded-full font-medium text-sm transition-all whitespace-nowrap">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $cat['icon'] }}"></path></svg>
                             {{ $cat['label'] }}
@@ -304,7 +326,8 @@
 
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                 @foreach($exploreProducts as $product)
-                    <div x-show="activeCategory === 'Semua' || activeCategory === '{{ $product->category }}'" 
+                    @php $normalizedCategory = Str::slug($product->category ?? ''); @endphp
+                    <div x-show="activeCategory === 'all' || activeCategory === '{{ $normalizedCategory }}'" 
                          x-transition.opacity.duration.300ms
                          class="group bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col overflow-hidden">
                         

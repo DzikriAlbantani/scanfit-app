@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use App\Models\UserProfile;
 
 class UserProfileController extends Controller
@@ -19,6 +20,13 @@ class UserProfileController extends Controller
         // 1. Ambil user yang sedang login
         $user = Auth::user();
         
+        // Force refresh to get latest subscription data from database
+        if ($user) {
+            $user->refresh();
+            // Update session with refreshed user
+            Auth::setUser($user);
+        }
+        
         // 2. Ambil data profil (relasi) dengan null safety
         $profile = $user->profile ?? null; // Jika belum ada profil, kirim null
 
@@ -26,7 +34,70 @@ class UserProfileController extends Controller
         $scans = $user->scans()->latest()->paginate(10); // Paginate untuk performa
         $likes = $user->likes()->latest()->paginate(10);
 
+        // 3b. Hitung metrik penggunaan untuk kartu ringkasan
+        $scanCount = $user->scans()->count();
+        $savedCount = $user->closetItems()->count();
+        $likeCount  = $user->likes()->count();
+
+        // 3c. Kumpulkan aktivitas terbaru (like & simpan closet)
+        $recentLikes = $user->likes()
+            ->select(['id', 'item_name', 'type', 'created_at'])
+            ->latest()
+            ->take(15)
+            ->get()
+            ->toBase()
+            ->map(function ($like) {
+                return [
+                    'id' => $like->id,
+                    'title' => $like->item_name ?? 'Item',
+                    'type' => $like->type ?: 'like',
+                    'kind' => 'like',
+                    'created_at' => $like->created_at,
+                    'url' => null,
+                ];
+            });
+
+        $recentSaves = $user->closetItems()
+            ->select(['id', 'name', 'created_at'])
+            ->latest()
+            ->take(15)
+            ->get()
+            ->toBase()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'title' => $item->name ?? 'Item tersimpan',
+                    'type' => 'saved',
+                    'kind' => 'saved',
+                    'created_at' => $item->created_at,
+                    'url' => route('closet.index'),
+                ];
+            });
+
+        $activities = $recentLikes
+            ->merge($recentSaves)
+            ->sortByDesc('created_at')
+            ->values();
+
         // 4. Kirim variabel ke View
+        return view('profile.index', compact('user', 'profile', 'scans', 'likes', 'scanCount', 'savedCount', 'likeCount', 'activities'));
+    }
+
+    /**
+     * Show the form for editing the user's profile.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function edit()
+    {
+        $user = Auth::user()->load(['scans' => function ($query) {
+            $query->latest()->take(10);
+        }, 'likes' => function ($query) {
+            $query->with('product')->latest()->take(10);
+        }]);
+
+        $profile = $user->profile;
+
         return view('profile.index', compact('user', 'profile', 'scans', 'likes'));
     }
 
@@ -50,6 +121,7 @@ class UserProfileController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
             'bio' => ['nullable', 'string', 'max:500'],
             'style_preference' => ['nullable', 'string'],
             'skin_tone' => ['nullable', 'string'],
@@ -59,13 +131,21 @@ class UserProfileController extends Controller
             'favorite_colors' => ['nullable', 'array'],
         ]);
 
-        $userId = Auth::id();
+        $user = Auth::user();
 
-        if (!$userId) {
-            return redirect()->route('login');
+        // Handle avatar upload
+        if ($request->hasFile('avatar')) {
+            // Delete old avatar if exists
+            if ($user->profile_photo_path && Storage::disk('public')->exists($user->profile_photo_path)) {
+                Storage::disk('public')->delete($user->profile_photo_path);
+            }
+
+            // Store new avatar
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $user->profile_photo_path = $path;
         }
 
-        $user = Auth::user();
+        // Update user name
         $user->name = $validated['name'];
         $user->save();
 
@@ -74,13 +154,13 @@ class UserProfileController extends Controller
         unset($validated['favorite_colors']);
 
         // Update or create profile
-        $profileData = array_diff_key($validated, ['name' => '']); // Remove name from profile data
+        $profileData = array_diff_key($validated, ['name' => '', 'avatar' => '']); // Remove name and avatar from profile data
         UserProfile::updateOrCreate(
-            ['user_id' => $userId],
+            ['user_id' => $user->id],
             $profileData
         );
 
-        return redirect()->route('profile.index')->with('status', 'Profile updated successfully.');
+        return redirect()->back()->with('status', 'profile-updated');
     }
 
     /**
@@ -111,20 +191,38 @@ class UserProfileController extends Controller
             $validated['gender'] = $genderMapping[$validated['gender']];
         }
 
-        // Map style_preference values
+        // Map style_preference values to canonical slugs used across scans/products
         $styleMapping = [
+            'casual' => 'casual',
             'Casual' => 'casual',
             'Formal' => 'formal',
+            'formal' => 'formal',
             'Sporty' => 'sport',
+            'sporty' => 'sport',
+            'Sport' => 'sport',
+            'sport' => 'sport',
             'Streetwear' => 'street',
+            'streetwear' => 'street',
+            'Street' => 'street',
+            'street' => 'street',
             'Vintage' => 'vintage',
+            'vintage' => 'vintage',
             'Minimalist' => 'minimal',
-            // For others, default to 'casual' or handle accordingly
-            'Korean' => 'casual',
-            'Bohemian' => 'casual',
+            'minimalist' => 'minimal',
+            'Minimal' => 'minimal',
+            'minimal' => 'minimal',
+            'Korean Style' => 'street',
+            'Korean' => 'street',
+            'Bohemian' => 'vintage',
         ];
         if (isset($styleMapping[$validated['style_preference']])) {
             $validated['style_preference'] = $styleMapping[$validated['style_preference']];
+        }
+
+        // Final guard: only allow known styles
+        $allowedStyles = ['casual', 'formal', 'street', 'vintage', 'minimal', 'sport'];
+        if (!in_array($validated['style_preference'], $allowedStyles, true)) {
+            $validated['style_preference'] = 'casual';
         }
 
         // Map skin_tone values

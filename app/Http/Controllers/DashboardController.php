@@ -29,16 +29,42 @@ class DashboardController extends Controller
             $recommendations = $recommendationsQuery->inRandomOrder()->take(4)->get();
         }
 
-        // Explore Products: 8 random, exclude recommendations if possible
+        // Explore Products: ensure each main category shows up, then fill remaining slots
         $excludedIds = $recommendations->pluck('id');
-        $exploreProducts = FashionItem::with('brand')
-            ->whereHas('brand', function ($q) {
-                $q->where('status', 'approved');
-            })
-            ->whereNotIn('id', $excludedIds)
-            ->inRandomOrder()
-            ->take(8)
-            ->get();
+        $categorySeeds = ['Atasan', 'Bawahan', 'Outerwear', 'Aksesoris'];
+        $exploreProducts = collect();
+
+        foreach ($categorySeeds as $cat) {
+            $items = FashionItem::with('brand')
+                ->whereHas('brand', function ($q) {
+                    $q->where('status', 'approved');
+                })
+                ->where('category', $cat)
+                ->whereNotIn('id', $excludedIds)
+                ->inRandomOrder()
+                ->take(2)
+                ->get();
+
+            $exploreProducts = $exploreProducts->merge($items);
+        }
+
+        // Fill up to 12 cards total with random leftovers
+        if ($exploreProducts->count() < 12) {
+            $fillCount = 12 - $exploreProducts->count();
+            $additional = FashionItem::with('brand')
+                ->whereHas('brand', function ($q) {
+                    $q->where('status', 'approved');
+                })
+                ->whereNotIn('id', $excludedIds)
+                ->whereNotIn('id', $exploreProducts->pluck('id'))
+                ->inRandomOrder()
+                ->take($fillCount)
+                ->get();
+
+            $exploreProducts = $exploreProducts->merge($additional);
+        }
+
+        $exploreProducts = $exploreProducts->unique('id')->values();
 
         // Promo Products: Prioritize discounted or high clicks
         $promoProducts = FashionItem::with('brand')
@@ -67,8 +93,11 @@ class DashboardController extends Controller
             $promoProducts = $promoProducts->merge($additional);
         }
 
-        // Active Banners for Carousel (approved or active status, within schedule window)
+        // Active Banners for Carousel (requires approved/active + paid placement active)
         $banners = \App\Models\BrandBanner::whereIn('status', ['active', 'approved'])
+            ->whereHas('placements', function ($q) {
+                $q->active();
+            })
             ->where(function ($query) {
                 // Check started_at: should be null or already started
                 $query->where(function ($q) {

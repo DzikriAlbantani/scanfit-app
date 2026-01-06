@@ -3,10 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\FashionItem;
+use App\Models\ClickEvent;
+use App\Models\ClosetItem;
+use App\Models\Payment;
+use App\Models\Scan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Redirect;
+use App\Services\Payments\MidtransService;
 
 class BrandDashboardController extends Controller
 {
@@ -48,23 +56,36 @@ class BrandDashboardController extends Controller
         $totalProducts = $brand->fashionItems()->count();
         
         // Total Scan Matches: hitung berapa kali produk brand muncul di scan results
-        $totalScanMatches = \App\Models\Scan::whereNotNull('scan_result')
-            ->get()
-            ->filter(function ($scan) use ($brand) {
-                // Parse scan_result jika JSON string
-                $result = is_string($scan->scan_result) ? json_decode($scan->scan_result, true) : $scan->scan_result;
-                if (!is_array($result) || !isset($result['items'])) {
-                    return false;
-                }
-                // Cek apakah ada produk dari brand ini dalam recommendations
-                foreach ($result['items'] as $item) {
-                    if (isset($item['brand_id']) && $item['brand_id'] == $brand->id) {
-                        return true;
+        // Loop through scans dan hitung setiap product dari brand yang muncul di recommendations
+        $totalScanMatches = 0;
+        $scans = \App\Models\Scan::whereNotNull('scan_result')->get();
+        
+        foreach ($scans as $scan) {
+            // Parse scan_result JSON
+            $result = is_string($scan->scan_result) ? json_decode($scan->scan_result, true) : $scan->scan_result;
+            
+            if (!is_array($result)) {
+                continue;
+            }
+            
+            // Check in recommendations (format: array of product objects/arrays)
+            if (isset($result['recommendations']) && is_array($result['recommendations'])) {
+                foreach ($result['recommendations'] as $product) {
+                    // Product dapat berupa object atau array
+                    $productArray = is_object($product) ? get_object_vars($product) : (is_array($product) ? $product : []);
+                    
+                    // Cek apakah brand_id cocok dengan brand yang sedang diakses
+                    if (isset($productArray['brand_id']) && $productArray['brand_id'] == $brand->id) {
+                        $totalScanMatches++;
+                    } elseif (isset($productArray['brand']) && is_array($productArray['brand'])) {
+                        // Jika brand nested dalam array
+                        if (isset($productArray['brand']['id']) && $productArray['brand']['id'] == $brand->id) {
+                            $totalScanMatches++;
+                        }
                     }
                 }
-                return false;
-            })
-            ->count();
+            }
+        }
         
         // Product Views: sum clicks_count
         $totalClicks = $brand->fashionItems()->sum('clicks_count') ?? 0;
@@ -87,6 +108,13 @@ class BrandDashboardController extends Controller
 
         // 5. Prepare 30-day Chart Data
         $chartData = $this->prepare30DayChartData($brand);
+        
+        Log::info('Chart data prepared for brand ' . $brand->id, [
+            'labels_count' => count($chartData['labels'] ?? []),
+            'clicks_sum' => array_sum($chartData['clicks'] ?? []),
+            'scans_sum' => array_sum($chartData['scans'] ?? []),
+            'saves_sum' => array_sum($chartData['saves'] ?? []),
+        ]);
 
         // 6. Prepare Banner Data
         $banners = $brand->banners()->latest('created_at')->paginate(5);
@@ -117,53 +145,86 @@ class BrandDashboardController extends Controller
      */
     private function prepare30DayChartData($brand)
     {
+        $end = now()->endOfDay();
+        $start = now()->subDays(29)->startOfDay();
+        $itemIds = $brand->fashionItems()->pluck('id');
+        
+        Log::info('Preparing chart data for brand ' . $brand->id, [
+            'itemIds_count' => $itemIds->count(),
+            'itemIds_sample' => $itemIds->take(5)->toArray(),
+        ]);
+
+        // Aggregate clicks per day from click_events
+        $clicksPerDay = ClickEvent::whereIn('fashion_item_id', $itemIds)
+            ->whereBetween('created_at', [$start, $end])
+            ->selectRaw('DATE(created_at) as d, COUNT(*) as total')
+            ->groupBy('d')
+            ->pluck('total', 'd');
+        
+        Log::info('Clicks per day calculated', ['days_count' => $clicksPerDay->count()]);
+
+        // Aggregate saves per day from closet_items
+        $savesPerDay = ClosetItem::whereIn('fashion_item_id', $itemIds)
+            ->whereBetween('created_at', [$start, $end])
+            ->selectRaw('DATE(created_at) as d, COUNT(*) as total')
+            ->groupBy('d')
+            ->pluck('total', 'd');
+        
+        Log::info('Saves per day calculated', ['days_count' => $savesPerDay->count()]);
+
+        // Aggregate scans per day that include this brand
+        $scansPerDay = [];
+        $scans = Scan::whereBetween('created_at', [$start, $end])->get();
+        foreach ($scans as $scan) {
+            $result = is_string($scan->scan_result) ? json_decode($scan->scan_result, true) : $scan->scan_result;
+            if (!is_array($result)) {
+                continue;
+            }
+            
+            $hasBrand = false;
+            
+            // Check recommendations (new structure)
+            if (isset($result['recommendations']) && is_array($result['recommendations'])) {
+                foreach ($result['recommendations'] as $product) {
+                    $productArray = is_object($product) ? get_object_vars($product) : (is_array($product) ? $product : []);
+                    
+                    if ((isset($productArray['brand_id']) && $productArray['brand_id'] == $brand->id) ||
+                        (isset($productArray['brand']) && is_array($productArray['brand']) && isset($productArray['brand']['id']) && $productArray['brand']['id'] == $brand->id)) {
+                        $hasBrand = true;
+                        break;
+                    }
+                }
+            }
+            
+            // Legacy fallback for old structure with 'items'
+            if (!$hasBrand && isset($result['items'])) {
+                foreach ($result['items'] as $item) {
+                    if (isset($item['brand_id']) && (int)$item['brand_id'] === (int)$brand->id) {
+                        $hasBrand = true;
+                        break;
+                    }
+                }
+            }
+            
+            if ($hasBrand) {
+                $dateKey = Carbon::parse($scan->created_at)->format('Y-m-d');
+                $scansPerDay[$dateKey] = ($scansPerDay[$dateKey] ?? 0) + 1;
+            }
+        }
+
         $days = [];
         $clicksData = [];
         $scansData = [];
         $savesData = [];
 
-        // Generate last 30 days
         for ($i = 29; $i >= 0; $i--) {
             $date = now()->subDays($i);
-            $dateString = $date->format('Y-m-d');
+            $dateKey = $date->format('Y-m-d');
             $days[] = $date->format('d M');
 
-            // Count clicks for this day (using created_at from fashion_items as proxy)
-            // In production, you'd have a clicks tracking table with timestamps
-            $dailyClicks = $brand->fashionItems()
-                ->whereDate('created_at', '<=', $date)
-                ->sum('clicks_count');
-            
-            // For demo: generate realistic trend
-            $baseClicks = max(0, $dailyClicks / 30);
-            $clicksData[] = round($baseClicks + rand(-10, 30));
-
-            // Count scans with brand products for this day
-            $dailyScans = \App\Models\Scan::whereDate('created_at', $dateString)
-                ->get()
-                ->filter(function ($scan) use ($brand) {
-                    $result = is_string($scan->scan_result) ? json_decode($scan->scan_result, true) : $scan->scan_result;
-                    if (!is_array($result) || !isset($result['items'])) {
-                        return false;
-                    }
-                    foreach ($result['items'] as $item) {
-                        if (isset($item['brand_id']) && $item['brand_id'] == $brand->id) {
-                            return true;
-                        }
-                    }
-                    return false;
-                })
-                ->count();
-            $scansData[] = $dailyScans;
-
-            // Count saves for this day
-            $dailySaves = \App\Models\ClosetItem::whereIn(
-                'fashion_item_id',
-                $brand->fashionItems()->pluck('id')
-            )
-            ->whereDate('created_at', $dateString)
-            ->count();
-            $savesData[] = $dailySaves;
+            $clicksData[] = (int)($clicksPerDay[$dateKey] ?? 0);
+            $scansData[] = (int)($scansPerDay[$dateKey] ?? 0);
+            $savesData[] = (int)($savesPerDay[$dateKey] ?? 0);
         }
 
         return [
@@ -171,7 +232,138 @@ class BrandDashboardController extends Controller
             'clicks' => $clicksData,
             'scans' => $scansData,
             'saves' => $savesData,
+            'totals' => [
+                'clicks' => array_sum($clicksData),
+                'scans' => array_sum($scansData),
+                'saves' => array_sum($savesData),
+            ],
+            'range' => [
+                'start' => $start,
+                'end' => $end,
+            ],
         ];
+    }
+
+    private function percentChange(float $current, float $previous): ?float
+    {
+        if ($previous <= 0) {
+            return null;
+        }
+        return round((($current - $previous) / $previous) * 100, 1);
+    }
+
+    /**
+     * Upgrade subscription for brand partner via Midtrans Snap.
+     */
+    public function upgradeSubscription(Request $request)
+    {
+        $request->validate([
+            'plan' => 'required|in:pro',
+            'duration' => 'nullable|in:monthly,yearly',
+        ]);
+
+        $user = Auth::user();
+        $brand = $user->brand;
+
+        if (!$brand || $brand->status !== 'approved') {
+            abort(403, 'Brand not approved');
+        }
+
+        $duration = $request->input('duration', 'monthly');
+        $plans = config('pricing.brand_plans', []);
+        $planKey = $request->input('plan');
+        $planConfig = $plans[$planKey] ?? null;
+
+        if (!$planConfig) {
+            return Redirect::back()->with('error', 'Paket brand tidak tersedia.');
+        }
+
+        $base = (int)($planConfig['monthly_price'] ?? 0);
+        $discountMonths = (int)($planConfig['yearly_discount_months'] ?? 0);
+        $monthsToPay = $duration === 'yearly' ? max(0, 12 - $discountMonths) : 1;
+        $amount = $base * $monthsToPay;
+
+        if ($amount <= 0) {
+            $expiresAt = $duration === 'yearly' ? now()->addYear() : now()->addMonth();
+            $brand->update([
+                'subscription_plan' => 'pro',
+                'is_premium' => true,
+                'subscription_expires_at' => $expiresAt,
+            ]);
+
+            return Redirect::route('brand.analytics')->with('success', 'Paket Pro diaktifkan untuk brand Anda.');
+        }
+
+        $orderId = 'SF-BRAND-' . Str::upper(Str::random(10));
+
+        $payment = Payment::create([
+            'user_id' => $user->id,
+            'order_id' => $orderId,
+            'plan' => $planKey,
+            'amount' => $amount,
+            'status' => 'pending',
+            'metadata' => [
+                'cycle' => $duration,
+                'user_id' => $user->id,
+                'brand_id' => $brand->id,
+                'brand_name' => $brand->brand_name,
+                'brand_subscription' => true,
+                'plan' => $planKey,
+            ],
+        ]);
+
+        $service = new MidtransService();
+        $payload = [
+            'transaction_details' => [
+                'order_id' => $orderId,
+                'gross_amount' => $amount,
+            ],
+            'customer_details' => [
+                'first_name' => $user->name,
+                'email' => $user->email,
+            ],
+            'item_details' => [
+                [
+                    'id' => 'brand-plan-' . $planKey . '-' . $duration,
+                    'price' => $amount,
+                    'quantity' => 1,
+                    'name' => 'ScanFit Brand ' . ucfirst($planKey) . ' (' . ucfirst($duration) . ')',
+                ],
+            ],
+        ];
+
+        try {
+            $result = $service->createSnapTransaction($payload);
+
+            Log::info('Brand Snap transaction created', [
+                'order_id' => $orderId,
+                'brand_id' => $brand->id,
+                'token' => $result['token'] ?? null,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Brand Snap transaction failed', [
+                'order_id' => $orderId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return Redirect::back()->with('error', 'Gagal membuat transaksi Midtrans. Coba lagi.');
+        }
+
+        $payment->update([
+            'snap_token' => $result['token'] ?? null,
+            'snap_redirect_url' => $result['redirect_url'] ?? null,
+            'metadata' => array_merge($payment->metadata ?? [], $result, [
+                'cycle' => $duration,
+                'base_price' => $base,
+                'brand_subscription' => true,
+            ]),
+        ]);
+
+        return view('payments.checkout', [
+            'snapToken' => $result['token'] ?? null,
+            'clientKey' => $service->clientKey(),
+            'payment' => $payment,
+        ]);
     }
 
     /**
@@ -187,25 +379,83 @@ class BrandDashboardController extends Controller
             abort(403, 'Brand not approved');
         }
 
-        // Ambil produk beserta save count untuk analitik
+        $itemIds = $brand->fashionItems()->pluck('id');
+        $isPro = $brand->isPro();
+        $totalViews = $brand->fashionItems()->sum('clicks_count');
+
+        if (!$isPro) {
+            $analytics = [
+                'is_pro' => false,
+                'subscription_plan' => $brand->subscription_plan ?? 'basic',
+                'total_views' => $totalViews,
+                'chart' => [
+                    'labels' => [],
+                    'clicks' => [],
+                    'saves' => [],
+                    'scans' => [],
+                    'totals' => [
+                        'clicks' => $totalViews,
+                        'saves' => 0,
+                        'scans' => 0,
+                    ],
+                ],
+                'deltas' => [
+                    'views' => null,
+                    'conversion' => null,
+                    'engagement' => null,
+                    'new_products' => null,
+                ],
+                'active_products' => null,
+                'conversion_rate' => null,
+                'engagement_rate' => null,
+                'total_saves' => null,
+                'top_performing_products' => [],
+                'period' => [],
+                'date_range' => [],
+            ];
+
+            return view('brand.analytics', compact('brand', 'analytics'));
+        }
+
+        // Chart data 30 hari terakhir (real events)
+        $chartData = $this->prepare30DayChartData($brand);
+        $start = $chartData['range']['start'];
+        $end = $chartData['range']['end'];
+        $prevStart = (clone $start)->subDays(30);
+        $prevEnd = (clone $start)->subDay()->endOfDay();
+
+        // Current & previous period aggregates (30 hari)
+        $currentViews = ClickEvent::whereIn('fashion_item_id', $itemIds)
+            ->whereBetween('created_at', [$start, $end])
+            ->count();
+        $prevViews = ClickEvent::whereIn('fashion_item_id', $itemIds)
+            ->whereBetween('created_at', [$prevStart, $prevEnd])
+            ->count();
+
+        $currentSaves = ClosetItem::whereIn('fashion_item_id', $itemIds)
+            ->whereBetween('created_at', [$start, $end])
+            ->count();
+        $prevSaves = ClosetItem::whereIn('fashion_item_id', $itemIds)
+            ->whereBetween('created_at', [$prevStart, $prevEnd])
+            ->count();
+
+        $conversionRate = $currentViews > 0 ? round(($currentSaves / $currentViews) * 100, 1) : 0.0;
+        $conversionPrev = $prevViews > 0 ? round(($prevSaves / $prevViews) * 100, 1) : 0.0;
+
+        $engagementRate = $currentViews > 0 ? round((($currentSaves + $currentViews) / $currentViews) * 100, 1) : 0.0;
+        $engagementPrev = $prevViews > 0 ? round((($prevSaves + $prevViews) / $prevViews) * 100, 1) : 0.0;
+
+        // Produk + saves count untuk tabel
         $products = $brand->fashionItems()
             ->withCount(['closetItems as saves_count'])
             ->get();
 
-        $totalViews   = $products->sum('clicks_count');
-        $totalSaves   = $products->sum('saves_count');
-        $activeCount  = $products->where('status', 'active')->count();
+        $totalSaves = $products->sum('saves_count');
+        $activeCount = $products->where('status', 'active')->count();
+        $newProducts = $brand->fashionItems()
+            ->whereBetween('created_at', [$start, $end])
+            ->count();
 
-        // Hitung conversion & engagement
-        $conversionRate = $totalViews > 0 ? round(($totalSaves / $totalViews) * 100, 1) : 0.0;
-
-        // Engagement rate: kombinasi tindakan (views + saves) dibanding total views (jika ada)
-        $engagementRate = $totalViews > 0 ? round((($totalSaves + $totalViews) / $totalViews) * 100, 1) : 0.0;
-
-        // Chart data 30 hari terakhir (reuse helper)
-        $chartData = $this->prepare30DayChartData($brand);
-
-        // Top performing products (berdasar clicks + saves)
         $topProducts = $products
             ->map(function ($item) {
                 $item->engagement_score = $item->clicks_count + $item->saves_count;
@@ -216,16 +466,164 @@ class BrandDashboardController extends Controller
             ->values();
 
         $analytics = [
-            'total_views'   => $totalViews,
+            'is_pro' => true,
+            'subscription_plan' => $brand->subscription_plan ?? 'pro',
+            'total_views'   => $chartData['totals']['clicks'] ?? 0,
             'active_products' => $activeCount,
             'conversion_rate' => $conversionRate,
             'engagement_rate' => $engagementRate,
             'total_saves'     => $totalSaves,
             'top_performing_products' => $topProducts,
             'chart' => $chartData,
+            'period' => [
+                'current_views' => $currentViews,
+                'prev_views' => $prevViews,
+                'current_saves' => $currentSaves,
+                'prev_saves' => $prevSaves,
+            ],
+            'deltas' => [
+                'views' => $this->percentChange($currentViews, $prevViews),
+                'conversion' => round($conversionRate - $conversionPrev, 1),
+                'engagement' => round($engagementRate - $engagementPrev, 1),
+                'new_products' => $newProducts,
+            ],
+            'date_range' => [
+                'start' => $start->toDateString(),
+                'end' => $end->toDateString(),
+            ],
         ];
 
         return view('brand.analytics', compact('brand', 'analytics'));
+    }
+
+    /**
+     * API endpoint untuk real-time analytics data (AJAX)
+     * Return JSON data untuk refresh chart dan metrics tanpa page reload
+     */
+    public function analyticsData()
+    {
+        $user = Auth::user();
+        $brand = $user->brand;
+
+        if (!$brand || $brand->status !== 'approved') {
+            return response()->json(['error' => 'Brand not approved'], 403);
+        }
+
+        $isPro = $brand->isPro();
+        $totalViews = $brand->fashionItems()->sum('clicks_count');
+
+        if (!$isPro) {
+            return response()->json([
+                'success' => true,
+                'is_pro' => false,
+                'metrics' => [
+                    'total_views' => $totalViews,
+                ],
+                'message' => 'Upgrade untuk membuka analytics detail',
+                'timestamp' => now()->toIso8601String(),
+            ]);
+        }
+
+        $itemIds = $brand->fashionItems()->pluck('id');
+
+        // Chart data 30 hari terakhir
+        $chartData = $this->prepare30DayChartData($brand);
+        $start = $chartData['range']['start'];
+        $end = $chartData['range']['end'];
+        $prevStart = (clone $start)->subDays(30);
+        $prevEnd = (clone $start)->subDay()->endOfDay();
+
+        // Current period metrics
+        $currentViews = ClickEvent::whereIn('fashion_item_id', $itemIds)
+            ->whereBetween('created_at', [$start, $end])
+            ->count();
+        $prevViews = ClickEvent::whereIn('fashion_item_id', $itemIds)
+            ->whereBetween('created_at', [$prevStart, $prevEnd])
+            ->count();
+
+        $currentSaves = ClosetItem::whereIn('fashion_item_id', $itemIds)
+            ->whereBetween('created_at', [$start, $end])
+            ->count();
+        $prevSaves = ClosetItem::whereIn('fashion_item_id', $itemIds)
+            ->whereBetween('created_at', [$prevStart, $prevEnd])
+            ->count();
+
+        // Calculate rates
+        $conversionRate = $currentViews > 0 ? round(($currentSaves / $currentViews) * 100, 1) : 0.0;
+        $conversionPrev = $prevViews > 0 ? round(($prevSaves / $prevViews) * 100, 1) : 0.0;
+
+        $engagementRate = $currentViews > 0 ? round((($currentSaves + $currentViews) / $currentViews) * 100, 1) : 0.0;
+        $engagementPrev = $prevViews > 0 ? round((($prevSaves + $prevViews) / $prevViews) * 100, 1) : 0.0;
+
+        // Top products
+        $products = $brand->fashionItems()
+            ->withCount(['closetItems as saves_count'])
+            ->get();
+
+        $totalViews = $products->sum('clicks_count');
+        $activeCount = $products->where('status', 'active')->count();
+        $newProducts = $brand->fashionItems()
+            ->whereBetween('created_at', [$start, $end])
+            ->count();
+
+        $topProducts = $products
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'image_url' => $item->image_url,
+                    'category' => $item->category,
+                    'clicks_count' => $item->clicks_count,
+                ];
+            })
+            ->sortByDesc('clicks_count')
+            ->take(10)
+            ->values();
+
+        return response()->json([
+            'success' => true,
+            'is_pro' => true,
+            'timestamp' => now()->toIso8601String(),
+            'metrics' => [
+                'total_views' => $totalViews,
+                'active_products' => $activeCount,
+                'conversion_rate' => $conversionRate,
+                'engagement_rate' => $engagementRate,
+                'total_saves' => $products->sum('saves_count'),
+                'new_products' => $newProducts,
+            ],
+            'deltas' => [
+                'views' => $this->percentChange($currentViews, $prevViews),
+                'conversion' => round($conversionRate - $conversionPrev, 1),
+                'engagement' => round($engagementRate - $engagementPrev, 1),
+                'new_products' => $newProducts,
+            ],
+            'chart' => [
+                'labels' => $chartData['labels'],
+                'datasets' => [
+                    [
+                        'label' => 'Views',
+                        'data' => $chartData['clicks'],
+                        'borderColor' => '#2563eb',
+                        'backgroundColor' => 'rgba(37, 99, 235, 0.12)',
+                    ],
+                    [
+                        'label' => 'Saves',
+                        'data' => $chartData['saves'],
+                        'borderColor' => '#f59e0b',
+                        'backgroundColor' => 'rgba(245, 158, 11, 0.10)',
+                    ],
+                    [
+                        'label' => 'Scan Matches',
+                        'data' => $chartData['scans'],
+                        'borderColor' => '#10b981',
+                        'backgroundColor' => 'rgba(16, 185, 129, 0.10)',
+                    ],
+                ],
+                'totals' => $chartData['totals'],
+            ],
+            'top_products' => $topProducts,
+        ]);
     }
 
     /**

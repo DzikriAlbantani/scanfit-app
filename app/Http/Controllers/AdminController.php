@@ -130,11 +130,12 @@ class AdminController extends Controller
     {
         $query = Brand::with('user');
 
-        if ($request->search) {
-            $query->where('brand_name', 'like', "%{$request->search}%")
-                  ->orWhere('description', 'like', "%{$request->search}%")
-                  ->orWhereHas('user', function ($q) {
-                      $q->where('name', 'like', "%{$request->search}%");
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('brand_name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhereHas('user', function ($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
                   });
         }
 
@@ -191,6 +192,27 @@ class AdminController extends Controller
         $owner = $brand->user;
 
         return view('admin.brands.show', compact('brand', 'products', 'owner'));
+    }
+
+    /**
+     * Update Brand Logo
+     */
+    public function updateBrandLogo(Request $request, Brand $brand)
+    {
+        $request->validate([
+            'logo' => 'required|image|mimes:jpeg,png,jpg,svg|max:2048',
+        ]);
+
+        // Delete old logo if exists
+        if ($brand->logo_url && \Storage::exists($brand->logo_url)) {
+            \Storage::delete($brand->logo_url);
+        }
+
+        // Store new logo
+        $path = $request->file('logo')->store('brand-logos', 'public');
+        $brand->update(['logo_url' => '/storage/' . $path]);
+
+        return redirect()->back()->with('success', 'Logo brand berhasil diupdate!');
     }
 
     /**

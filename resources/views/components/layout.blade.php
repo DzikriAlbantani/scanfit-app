@@ -57,7 +57,7 @@
                             @auth
                                 <div class="relative" x-data="{ dropdownOpen: false }">
                                     <button @click="dropdownOpen = !dropdownOpen" class="flex items-center gap-2 text-sm font-bold text-slate-700 hover:text-slate-900 focus:outline-none bg-white py-2 px-3 rounded-full border border-gray-200 hover:border-gray-300 transition">
-                                        <img src="https://ui-avatars.com/api/?name={{ Auth::user()->name }}&background=0F172A&color=fff" class="w-7 h-7 rounded-full">
+                                        <img src="{{ Auth::user()->profile_photo_url ?? 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->name).'&background=0F172A&color=fff' }}" alt="{{ Auth::user()->name }}" class="w-7 h-7 rounded-full object-cover">
                                         <span class="truncate max-w-[100px]">{{ Auth::user()->name }}</span>
                                         <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                                     </button>
@@ -189,6 +189,57 @@
             </div>
         </div>
     </footer>
+
+    {{-- Confirm Modal Component --}}
+    @include('components.confirm-modal')
+
+    {{-- Confirm Modal Helpers --}}
+    <script>
+        // Expose helpers globally so inline onclick calls work
+        window.showDeleteItemConfirm = function(itemName, form) {
+            window.showDeleteConfirm(itemName, null, form);
+        };
+
+        window.showDeleteAlbumConfirm = function(albumName, form) {
+            window.showDeleteConfirm(`Album: ${albumName}`, null, form);
+        };
+
+        window.showMoveToClosetConfirm = function(itemName, form) {
+            window.openConfirmModal({
+                title: 'Pindahkan ke Closet',
+                message: `Pindahkan "${itemName}" ke closet utama?`,
+                type: 'warning',
+                showWarning: false,
+                onConfirm: () => {
+                    if (form) form.submit();
+                }
+            });
+        };
+
+        window.showDeleteUserConfirm = function(userName, form) {
+            window.openConfirmModal({
+                title: 'Hapus Pengguna',
+                message: `Yakin menghapus pengguna "${userName}"? Tindakan ini tidak dapat dibatalkan.`,
+                type: 'delete',
+                showWarning: true,
+                onConfirm: () => {
+                    if (form) form.submit();
+                }
+            });
+        };
+
+        window.showDeleteBrandConfirm = function(brandName, form) {
+            window.openConfirmModal({
+                title: 'Hapus Brand',
+                message: `Yakin menghapus brand "${brandName}"? Semua data terkait akan dihapus permanen.`,
+                type: 'delete',
+                showWarning: true,
+                onConfirm: () => {
+                    if (form) form.submit();
+                }
+            });
+        };
+    </script>
 
     {{-- Product Click Tracking --}}
     <script src="{{ asset('js/click-tracker.js') }}"></script>

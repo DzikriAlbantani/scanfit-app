@@ -9,12 +9,13 @@ class UserProfile extends Model
 {
     protected $fillable = [
         'user_id',
-        'gender',
+        'bio',
         'style_preference',
         'skin_tone',
         'body_size',
+        'height',
+        'weight',
         'favorite_color',
-        'main_need',
     ];
 
     protected $casts = [

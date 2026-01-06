@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chart Test</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        #testChart { height: 400px; margin: 20px 0; border: 1px solid #ccc; }
+        .info { background: #f0f0f0; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Chart.js Test</h1>
+    
+    <div class="info">
+        <p>This page tests if Chart.js is working correctly</p>
+    </div>
+    
+    <div id="testChart">
+        <canvas id="myChart" role="img" aria-label="Test Chart"></canvas>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <script>
+        console.log('=== CHART TEST ===');
+        console.log('Chart.js version:', Chart.version);
+        
+        // Test with actual data like our dashboard
+        const testData = {
+            labels: ["08 Dec","09 Dec","10 Dec","11 Dec","12 Dec","13 Dec","14 Dec","15 Dec","16 Dec","17 Dec","18 Dec","19 Dec","20 Dec","21 Dec","22 Dec","23 Dec","24 Dec","25 Dec","26 Dec","27 Dec","28 Dec","29 Dec","30 Dec","31 Dec","01 Jan","02 Jan","03 Jan","04 Jan","05 Jan","06 Jan"],
+            clicks: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,3],
+            scans: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,25,17],
+            saves: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        };
+        
+        console.log('Test data:', testData);
+        console.log('Clicks sum:', testData.clicks.reduce((a,b) => a+b, 0));
+        console.log('Scans sum:', testData.scans.reduce((a,b) => a+b, 0));
+        
+        function initChart() {
+            const canvas = document.getElementById('myChart');
+            console.log('Canvas element:', canvas);
+            console.log('Canvas parent:', canvas.parentElement);
+            console.log('Parent height:', canvas.parentElement.style.height);
+            
+            const ctx = canvas.getContext('2d');
+            console.log('Canvas context:', ctx);
+            
+            if (!ctx) {
+                console.error('Failed to get 2D context');
+                return;
+            }
+            
+            try {
+                const chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: testData.labels,
+                        datasets: [{
+                            label: 'Clicks',
+                            data: testData.clicks,
+                            borderColor: 'rgb(59, 130, 246)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+                
+                console.log('Chart created successfully:', chart);
+            } catch (error) {
+                console.error('Error creating chart:', error);
+                throw error;
+            }
+        }
+        
+        if (document.readyState === 'loading') {
+            console.log('DOM loading...');
+            document.addEventListener('DOMContentLoaded', initChart);
+        } else {
+            console.log('DOM already loaded');
+            initChart();
+        }
+    </script>
+</body>
+</html>

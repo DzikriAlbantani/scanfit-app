@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'google' => [
+        'ai_api_key' => env('GOOGLE_AI_API_KEY'),
+        // Optional: allow disabling SSL verification in dev
+        'verify_ssl' => env('AI_VERIFY_SSL', true),
+    ],
+
 ];

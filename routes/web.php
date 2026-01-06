@@ -18,6 +18,7 @@ use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\BulkProductImportController;
 use App\Http\Controllers\Brand\BannerController;
+use App\Http\Controllers\Brand\BannerPlacementController;
 use App\Http\Controllers\Admin\BannerAdminController;
 use App\Http\Controllers\BannerClickController;
 
@@ -27,7 +28,16 @@ use App\Http\Controllers\BannerClickController;
 |--------------------------------------------------------------------------
 */
 Route::get('/', function () {
-    return Auth::check() ? redirect()->route('dashboard') : view('welcome');
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+    
+    $brands = \App\Models\Brand::where('status', 'approved')
+        ->whereNotNull('logo_url')
+        ->limit(6)
+        ->get();
+    
+    return view('welcome', compact('brands'));
 });
 
 // Brand Registration (Form)
@@ -62,6 +72,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/scan', [ScanController::class, 'index'])->name('scan.index');
     Route::post('/scan', [ScanController::class, 'store'])->name('scan.store');
     Route::get('/scan/result/{id}', [ScanController::class, 'result'])->name('scan.result');
+    
+    // Test subscription status (for debugging)
+    Route::get('/test-subscription', function () {
+        $user = auth()->user();
+        if (!$user) return 'Please login first';
+        $user->refresh();
+        auth()->setUser($user);
+        return [
+            'user_id' => $user->id,
+            'name' => $user->name,
+            'subscription_plan' => $user->subscription_plan,
+            'is_premium' => $user->is_premium ? 'TRUE' : 'FALSE',
+            'subscription_expires_at' => $user->subscription_expires_at,
+            'isPremium()' => $user->isPremium() ? 'TRUE' : 'FALSE',
+            'hasActiveSubscription()' => $user->hasActiveSubscription() ? 'TRUE' : 'FALSE',
+        ];
+    });
+    
     Route::resource('closet', ClosetController::class)->except(['create', 'show', 'edit']);
     Route::post('/closet/save', [ClosetController::class, 'save'])->name('closet.save'); // Pindah ke sini jika butuh login
     
@@ -79,12 +107,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/pricing', [PremiumController::class, 'index'])->name('pricing.index');
     Route::get('/premium', function () { return redirect()->route('pricing.index'); })->name('premium.index');
 
+    // Subscription info & management
+    Route::get('/subscription/info', [SubscriptionController::class, 'info'])->name('subscription.info');
+
     // Mock subscription upgrade
     Route::post('/subscription/upgrade/{plan}', [SubscriptionController::class, 'upgrade'])->name('subscription.upgrade');
 
     // Payment checkout & finish
     Route::get('/checkout/{plan}', [PaymentController::class, 'checkout'])->name('payments.checkout');
+    Route::get('/payment/success/{paymentId}', [PaymentController::class, 'success'])->name('payments.success');
     Route::get('/payment/finish', [PaymentController::class, 'finish'])->name('payments.finish');
+    Route::get('/payment/refresh-subscription', [PaymentController::class, 'refreshSubscription'])->name('payments.refresh-subscription');
 
     // --- BRAND STATUS PAGES (Wajib di atas Wildcard) ---
     Route::get('/brand/pending', [BrandRegisterController::class, 'pending'])->name('brand.pending');
@@ -94,6 +127,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('brand.approved')->prefix('brand')->name('brand.')->group(function () {
         Route::get('/dashboard', [BrandDashboardController::class, 'dashboard'])->name('dashboard');
         Route::get('/analytics', [BrandDashboardController::class, 'analytics'])->name('analytics');
+        Route::get('/api/analytics', [BrandDashboardController::class, 'analyticsData'])->name('analytics.data');
+        Route::get('/pricing', function () {
+            return view('brand.pricing');
+        })->name('pricing');
+        Route::post('/upgrade', [BrandDashboardController::class, 'upgradeSubscription'])->name('subscription.upgrade');
         
         // Banner Management Routes (Integrated into Dashboard)
         Route::post('/banner', [BrandDashboardController::class, 'storeBanner'])->name('banner.store');
@@ -111,6 +149,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/banners/{banner}/edit', [BannerController::class, 'edit'])->name('banners.edit');
         Route::patch('/banners/{banner}', [BannerController::class, 'update'])->name('banners.update');
         Route::delete('/banners/{banner}', [BannerController::class, 'delete'])->name('banners.delete');
+
+        // Paid Banner Placements
+        Route::get('/banners/{banner}/placements/create', [BannerPlacementController::class, 'create'])->name('bannerPlacements.create');
+        Route::post('/banners/{banner}/placements', [BannerPlacementController::class, 'store'])->name('bannerPlacements.store');
+        Route::get('/banners/{banner}/placements/{placement}/finish', [BannerPlacementController::class, 'finish'])->name('bannerPlacements.finish');
         
         // Bulk Import Routes (HARUS sebelum resource untuk menghindari wildcard match)
         Route::get('/products/csv-template', [BulkProductImportController::class, 'csvTemplate'])->name('products.csv-template');
@@ -139,6 +182,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/brands/{brand}', [AdminController::class, 'brandShow'])->name('brands.show');
         Route::patch('/brands/{brand}/approve', [AdminController::class, 'approveBrand'])->name('brands.approve');
         Route::patch('/brands/{brand}/reject', [AdminController::class, 'rejectBrand'])->name('brands.reject');
+        Route::patch('/brands/{brand}/update-logo', [AdminController::class, 'updateBrandLogo'])->name('brands.update-logo');
         Route::delete('/brands/{brand}', [AdminController::class, 'deleteBrand'])->name('brands.delete');
         
         // System Settings
@@ -192,5 +236,36 @@ require __DIR__.'/auth.php';
 
 // Midtrans webhook (public, CSRF-exempt)
 Route::post('/payments/midtrans/notify', [PaymentController::class, 'webhook'])
-    ->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class)
-    ->name('payments.webhook');
+    ->withoutMiddleware('\\App\\Http\\Middleware\\VerifyCsrfToken');
+
+// Development: Manual webhook trigger (simulate payment success)
+Route::post('/test-trigger-webhook', function (Illuminate\Http\Request $request) {
+    if (!in_array(config('app.env'), ['local', 'development'])) {
+        return response()->json(['error' => 'Not available in production'], 403);
+    }
+
+    $paymentId = $request->query('payment_id');
+    $payment = \App\Models\Payment::findOrFail($paymentId);
+
+    // Simulate Midtrans webhook payload
+    $payload = [
+        'order_id' => $payment->order_id,
+        'transaction_id' => 'test-' . time(),
+        'transaction_status' => 'settlement',
+        'payment_type' => 'bank_transfer',
+    ];
+
+    // Trigger webhook manually
+    $response = app(\App\Http\Controllers\PaymentController::class)->webhook(
+        new \Illuminate\Http\Request($payload)
+    );
+
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Webhook processed',
+        'payment_id' => $payment->id,
+        'order_id' => $payment->order_id
+    ]);
+})
+->middleware(['auth'])
+->name('test.trigger-webhook');

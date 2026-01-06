@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Album Modal Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+<div x-data="{
+    addToAlbumModal: false,
+    selectedItem: 1,
+    selectedItemName: 'Test Item',
+    
+    openAddToAlbumModal(itemId, itemName) {
+        console.log('🔄 openAddToAlbumModal called');
+        console.log('itemId:', itemId);
+        console.log('itemName:', itemName);
+        this.selectedItem = itemId;
+        this.selectedItemName = itemName;
+        this.addToAlbumModal = true;
+        console.log('Modal state:', this.addToAlbumModal);
+    },
+    
+    submitAddToAlbum() {
+        console.log('🔄 submitAddToAlbum called');
+        const albumId = document.querySelector('input[name=\"album_id\"]:checked')?.value;
+        console.log('albumId:', albumId);
+        
+        if (!albumId) {
+            console.warn('❌ No album selected');
+            alert('Pilih album!');
+            return;
+        }
+        
+        console.log('✅ Form data valid');
+        alert('Akan mengirim: item_id=' + this.selectedItem + ', album_id=' + albumId);
+    }
+}" class="min-h-screen bg-gray-100 p-8">
+    
+    <div class="max-w-md mx-auto">
+        <h1 class="text-3xl font-bold mb-8">Test Modal</h1>
+        
+        <button @click="openAddToAlbumModal(123, 'Shorts Gym')" 
+                class="px-4 py-2 bg-blue-600 text-white rounded">
+            Open Modal
+        </button>
+    </div>
+    
+    {{-- Modal --}}
+    <div x-show="addToAlbumModal" style="display: none;" class="fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div x-show="addToAlbumModal" class="fixed inset-0 bg-black/50" @click="addToAlbumModal = false"></div>
+            
+            <div x-show="addToAlbumModal" class="inline-block bg-white rounded-lg p-6 max-w-md w-full">
+                <h2 class="text-2xl font-bold mb-4">Tambah ke Album</h2>
+                
+                <p class="mb-4" x-text="'Item: ' + selectedItemName"></p>
+                
+                <form @submit.prevent="submitAddToAlbum()">
+                    <div class="space-y-2 mb-4">
+                        <label class="flex items-center p-3 border rounded cursor-pointer hover:bg-gray-50">
+                            <input type="radio" name="album_id" value="1">
+                            <span class="ml-3">Album 1</span>
+                        </label>
+                        <label class="flex items-center p-3 border rounded cursor-pointer hover:bg-gray-50">
+                            <input type="radio" name="album_id" value="2">
+                            <span class="ml-3">Album 2</span>
+                        </label>
+                        <label class="flex items-center p-3 border rounded cursor-pointer hover:bg-gray-50">
+                            <input type="radio" name="album_id" value="3">
+                            <span class="ml-3">Album 3</span>
+                        </label>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        <button type="submit" class="flex-1 px-4 py-2 bg-slate-900 text-white rounded hover:bg-slate-800">
+                            Tambah
+                        </button>
+                        <button type="button" @click="addToAlbumModal = false" class="flex-1 px-4 py-2 border rounded hover:bg-gray-50">
+                            Batal
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        console.log('✅ Alpine loaded and initialized');
+    </script>
+</body>
+</html>
